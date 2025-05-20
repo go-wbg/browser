@@ -32,18 +32,24 @@ jobs:
           toolchain: stable-msvc
           override: true
 
+      - name: Instal Windows SDK
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri htpts://go.microsoft.com/fwlink/?linkid=2196241 -OutFile windows-sdk.exe
+          Start-Process -FilePath .\windows-sdk.exe -ArgumentList '/quiet' -Wait
+
       - name: Install MozillaBuild
         shell: pwsh
         run: |
           Invoke-WebRequest -Uri https://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-Latest.exe -OutFile MozillaBuild.exe
-          Start-Process -FilePath .\MozillaBuild.exe -ArgumentList '/S'
-      
+          Start-Process -FilePath .\MozillaBuild.exe -ArgumentList '/S' -Wait
+
       - name: Install Visual Studio Build Tools
         shell: pwsh
         run: |
           Invoke-WebRequest -Uri https://aka.ms/vs/16/release/vs_buildtools.exe -OutFile vs_buildtools.exe
           Start-Process -FilePath .\vs_buildtools.exe -ArgumentList '--quiet', '--wait', '--norestart', '--nocache', '--add Microsoft.VisualStudio.Workload.VCTools', '--add Microsoft.VisualStudio.Component.VC.ATL', '--add Microsoft.VisualStudio.Component.VC.ATLMFC' -Wait
-      
+  
       - name: Clone Firefox repository
         shell: pwsh
         run: |
@@ -74,7 +80,6 @@ jobs:
         working-directory: firefox-source
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
-          python ./mach clobber
           python ./mach build
       
       - name: Package Firefox
