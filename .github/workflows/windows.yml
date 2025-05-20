@@ -31,6 +31,12 @@ jobs:
         with:
           toolchain: stable-msvc
           override: true
+
+      - name: Install MozillaBuild
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-Latest.exe -OutFile MozillaBuild.exe
+          Start-Process -FilePath .\MozillaBuild.exe
       
       - name: Install Visual Studio Build Tools
         shell: pwsh
