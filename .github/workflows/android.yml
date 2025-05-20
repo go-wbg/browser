@@ -1,0 +1,168 @@
+name: Build Firefox for Android
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360  # 6 hours
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip python3-setuptools python3-dev \
+          build-essential cmake libpulse-dev libdbus-glib-1-dev \
+          libx11-dev libxext-dev libxrender-dev libxt-dev libxft-dev \
+          yasm libasound2-dev libcurl4-openssl-dev \
+          libnss3-dev libnss3 git curl autoconf2.13 openjdk-17-jdk \
+          nodejs npm zip unzip
+      
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v2
+      
+      - name: Configure Android SDK
+        run: |
+          sdkmanager --install "platforms;android-33" "build-tools;33.0.2" "ndk;25.2.9519653" "cmake;3.22.1"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/25.2.9519653" >> $GITHUB_ENV
+      
+      - name: Clone Firefox repository
+        run: |
+          git clone --depth 1 https://github.com/mozilla-firefox/firefox firefox-source
+      
+      - name: Inject configuration files
+        run: |
+          # Create directory for user preferences if it doesn't exist
+          mkdir -p firefox-source/mobile/android/app/src/main/assets/
+
+          # Copy common configuration files
+          if [ -d "./config/common" ]; then
+            # Copy user.js if it exists
+            if [ -f "./config/common/user.js" ]; then
+              cp "./config/common/user.js" firefox-source/mobile/android/app/src/main/assets/
+              echo "Copied common user.js file"
+            fi
+            
+            # Apply patches if they exist
+            if [ -d "./config/common/patches" ] && [ "$(ls -A ./config/common/patches)" ]; then
+              echo "Applying common patches..."
+              for patch in ./config/common/patches/*.patch; do
+                [ -f "$patch" ] || continue
+                cd firefox-source && git apply "../$patch" && cd ..
+                echo "Applied patch: $patch"
+              done
+            fi
+          fi
+          
+          # Copy Android-specific configuration files
+          if [ -d "./config/android" ]; then
+            # Apply Android-specific patches if they exist
+            if [ -d "./config/android/patches" ] && [ "$(ls -A ./config/android/patches)" ]; then
+              echo "Applying Android-specific patches..."
+              for patch in ./config/android/patches/*.patch; do
+                [ -f "$patch" ] || continue
+                cd firefox-source && git apply "../$patch" && cd ..
+                echo "Applied patch: $patch"
+              done
+            fi
+          fi
+          
+          # Copy any other custom files/directories
+          if [ -d "./config/common/custom" ]; then
+            cp -r ./config/common/custom/* firefox-source/
+            echo "Copied common custom files"
+          fi
+          
+          if [ -d "./config/android/custom" ]; then
+            cp -r ./config/android/custom/* firefox-source/
+            echo "Copied Android-specific custom files"
+          fi
+      
+      - name: Configure build
+        working-directory: firefox-source
+        run: |
+          # Create base mozconfig for Android
+          cat > mozconfig << 'EOF'
+          # Build Firefox for Android
+          ac_add_options --enable-application=mobile/android
+          
+          # Basic build configuration (consistent with other platforms)
+          ac_add_options --enable-optimize
+          ac_add_options --disable-debug
+          ac_add_options --enable-release
+          ac_add_options --disable-tests
+          
+          # Android SDK & NDK
+          ac_add_options --with-android-sdk="$ANDROID_HOME"
+          ac_add_options --with-android-ndk="$ANDROID_NDK_HOME"
+          
+          # Security hardening (consistent with macOS config)
+          ac_add_options --enable-hardening
+          ac_add_options --disable-necko-wifi
+          ac_add_options --disable-crashreporter
+          ac_add_options --disable-updater
+          
+          # Build parallelism
+          mk_add_options MOZ_MAKE_FLAGS="-j$(nproc)"
+          EOF
+          
+          # Append common mozconfig if it exists
+          if [ -f "../config/common/mozconfig.common" ]; then
+            cat "../config/common/mozconfig.common" >> mozconfig
+            echo "Appended common mozconfig settings"
+          fi
+          
+          # Append Android-specific mozconfig if it exists
+          if [ -f "../config/android/mozconfig.android" ]; then
+            cat "../config/android/mozconfig.android" >> mozconfig
+            echo "Appended Android-specific mozconfig settings"
+          fi
+      
+      - name: Bootstrap build environment
+        working-directory: firefox-source
+        run: |
+          ./mach --no-interactive bootstrap --application-choice=mobile_android
+      
+      - name: Build Firefox for Android
+        working-directory: firefox-source
+        run: |
+          ./mach build
+      
+      - name: Package Firefox for Android
+        working-directory: firefox-source
+        run: |
+          ./mach package
+      
+      - name: Upload Android build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: firefox-android
+          path: |
+            firefox-source/obj-*/dist/mobile/android/app/build/outputs/apk/*/release/*.apk
+            firefox-source/obj-*/dist/fenix-*.apk
+          if-no-files-found: warn
