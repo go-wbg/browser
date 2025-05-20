@@ -1,0 +1,74 @@
+name: Build Firefox for macOS
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-mac:
+    runs-on: macos-latest
+    timeout-minutes: 300  # 5 hours
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Install build dependencies
+        run: |
+          brew update
+          brew install yasm mercurial python3 ccache libidl autoconf@2.13 node
+          brew install llvm
+          python3 -m pip install --upgrade pip
+      
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      
+      - name: Clone Firefox repository
+        run: |
+          git clone --depth 1 https://github.com/mozilla-firefox/firefox firefox-source
+      
+      - name: Configure build
+        working-directory: firefox-source
+        run: |
+          # Create mozconfig file
+          echo "# Build Firefox for macOS" > mozconfig
+          echo "ac_add_options --enable-application=browser" >> mozconfig
+          echo "ac_add_options --enable-optimize" >> mozconfig
+          echo "ac_add_options --disable-debug" >> mozconfig
+          echo "ac_add_options --enable-release" >> mozconfig
+          echo "ac_add_options --disable-tests" >> mozconfig
+          echo "ac_add_options --target=x86_64-apple-darwin" >> mozconfig
+          echo "mk_add_options MOZ_MAKE_FLAGS=\"-j$(sysctl -n hw.ncpu)\"" >> mozconfig
+          
+          # Security hardening options
+          echo "ac_add_options --enable-hardening" >> mozconfig
+          echo "ac_add_options --disable-necko-wifi" >> mozconfig
+          echo "ac_add_options --disable-crashreporter" >> mozconfig
+          echo "ac_add_options --disable-updater" >> mozconfig
+      
+      - name: Bootstrap build environment
+        working-directory: firefox-source
+        run: |
+          ./mach --no-interactive bootstrap --application-choice=browser
+      
+      - name: Build Firefox
+        working-directory: firefox-source
+        run: |
+          ./mach build
+      
+      - name: Package Firefox
+        working-directory: firefox-source
+        run: |
+          ./mach package
+      
+      - name: Upload macOS build
+        uses: actions/upload-artifact@v4
+        with:
+          name: firefox-macos
+          path: firefox-source/obj-*/dist/firefox-*.dmg
+          if-no-files-found: warn
