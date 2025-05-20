@@ -69,4 +69,5 @@ jobs:
           path: |
             firefox-source/obj-*/dist/firefox-*.tar.bz2
             firefox-source/obj-*/dist/firefox-*.tar.gz
+            firefox-source/obj-*/dist/firefox-*.tar.xz
           if-no-files-found: warn
