@@ -34,11 +34,9 @@ jobs:
           components: rustfmt, clippy
           target: x86_64-pc-windows-msvc
 
-      - name: Install Windows SDK
-        shell: pwsh
-        run: |
-          Invoke-WebRequest -Uri https://go.microsoft.com/fwlink/?linkid=2196241 -OutFile windows-sdk.exe
-          Start-Process -FilePath .\windows-sdk.exe -ArgumentList '/quiet' -Wait
+      - uses: git-for-windows/setup-git-for-windows-sdk
+        with:
+          flavor: full
 
       - name: Install MozillaBuild
         shell: pwsh
