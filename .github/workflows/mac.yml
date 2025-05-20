@@ -32,10 +32,58 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/mozilla-firefox/firefox firefox-source
       
+      - name: Inject configuration files
+        run: |
+          # Create directory for user preferences if it doesn't exist
+          mkdir -p firefox-source/browser/app/profile/
+
+          # Copy common configuration files
+          if [ -d "./config/common" ]; then
+            # Copy user.js if it exists
+            if [ -f "./config/common/user.js" ]; then
+              cp "./config/common/user.js" firefox-source/browser/app/profile/
+              echo "Copied common user.js file"
+            fi
+            
+            # Apply patches if they exist
+            if [ -d "./config/common/patches" ] && [ "$(ls -A ./config/common/patches)" ]; then
+              echo "Applying common patches..."
+              for patch in ./config/common/patches/*.patch; do
+                [ -f "$patch" ] || continue
+                cd firefox-source && git apply "../$patch" && cd ..
+                echo "Applied patch: $patch"
+              done
+            fi
+          fi
+          
+          # Copy macOS-specific configuration files
+          if [ -d "./config/mac" ]; then
+            # Apply macOS-specific patches if they exist
+            if [ -d "./config/mac/patches" ] && [ "$(ls -A ./config/mac/patches)" ]; then
+              echo "Applying macOS-specific patches..."
+              for patch in ./config/mac/patches/*.patch; do
+                [ -f "$patch" ] || continue
+                cd firefox-source && git apply "../$patch" && cd ..
+                echo "Applied patch: $patch"
+              done
+            fi
+          fi
+          
+          # Copy any other custom files/directories
+          if [ -d "./config/common/custom" ]; then
+            cp -r ./config/common/custom/* firefox-source/
+            echo "Copied common custom files"
+          fi
+          
+          if [ -d "./config/mac/custom" ]; then
+            cp -r ./config/mac/custom/* firefox-source/
+            echo "Copied macOS-specific custom files"
+          fi
+      
       - name: Configure build
         working-directory: firefox-source
         run: |
-          # Create mozconfig file
+          # Create base mozconfig file
           echo "# Build Firefox for macOS" > mozconfig
           echo "ac_add_options --enable-application=browser" >> mozconfig
           echo "ac_add_options --enable-optimize" >> mozconfig
@@ -50,6 +98,18 @@ jobs:
           echo "ac_add_options --disable-necko-wifi" >> mozconfig
           echo "ac_add_options --disable-crashreporter" >> mozconfig
           echo "ac_add_options --disable-updater" >> mozconfig
+          
+          # Append common mozconfig if it exists
+          if [ -f "../config/common/mozconfig.common" ]; then
+            cat "../config/common/mozconfig.common" >> mozconfig
+            echo "Appended common mozconfig settings"
+          fi
+          
+          # Append macOS-specific mozconfig if it exists
+          if [ -f "../config/mac/mozconfig.mac" ]; then
+            cat "../config/mac/mozconfig.mac" >> mozconfig
+            echo "Appended macOS-specific mozconfig settings"
+          fi
       
       - name: Bootstrap build environment
         working-directory: firefox-source

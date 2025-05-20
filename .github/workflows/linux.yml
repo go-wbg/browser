@@ -35,10 +35,58 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/mozilla-firefox/firefox firefox-source
       
+      - name: Inject configuration files
+        run: |
+          # Create directory for user preferences if it doesn't exist
+          mkdir -p firefox-source/browser/app/profile/
+
+          # Copy common configuration files
+          if [ -d "./config/common" ]; then
+            # Copy user.js if it exists
+            if [ -f "./config/common/user.js" ]; then
+              cp "./config/common/user.js" firefox-source/browser/app/profile/
+              echo "Copied common user.js file"
+            fi
+            
+            # Apply patches if they exist
+            if [ -d "./config/common/patches" ] && [ "$(ls -A ./config/common/patches)" ]; then
+              echo "Applying common patches..."
+              for patch in ./config/common/patches/*.patch; do
+                [ -f "$patch" ] || continue
+                cd firefox-source && git apply "../$patch" && cd ..
+                echo "Applied patch: $patch"
+              done
+            fi
+          fi
+          
+          # Copy Linux-specific configuration files
+          if [ -d "./config/linux" ]; then
+            # Apply Linux-specific patches if they exist
+            if [ -d "./config/linux/patches" ] && [ "$(ls -A ./config/linux/patches)" ]; then
+              echo "Applying Linux-specific patches..."
+              for patch in ./config/linux/patches/*.patch; do
+                [ -f "$patch" ] || continue
+                cd firefox-source && git apply "../$patch" && cd ..
+                echo "Applied patch: $patch"
+              done
+            fi
+          fi
+          
+          # Copy any other custom files/directories
+          if [ -d "./config/common/custom" ]; then
+            cp -r ./config/common/custom/* firefox-source/
+            echo "Copied common custom files"
+          fi
+          
+          if [ -d "./config/linux/custom" ]; then
+            cp -r ./config/linux/custom/* firefox-source/
+            echo "Copied Linux-specific custom files"
+          fi
+      
       - name: Configure build
         working-directory: firefox-source
         run: |
-          # Create mozconfig file
+          # Create base mozconfig
           echo "# Build Firefox for Linux" > mozconfig
           echo "ac_add_options --enable-application=browser" >> mozconfig
           echo "ac_add_options --enable-optimize" >> mozconfig
@@ -46,6 +94,18 @@ jobs:
           echo "ac_add_options --enable-release" >> mozconfig
           echo "ac_add_options --disable-tests" >> mozconfig
           echo "mk_add_options MOZ_MAKE_FLAGS=\"-j$(nproc)\"" >> mozconfig
+          
+          # Append common mozconfig if it exists
+          if [ -f "../config/common/mozconfig.common" ]; then
+            cat "../config/common/mozconfig.common" >> mozconfig
+            echo "Appended common mozconfig settings"
+          fi
+          
+          # Append Linux-specific mozconfig if it exists
+          if [ -f "../config/linux/mozconfig.linux" ]; then
+            cat "../config/linux/mozconfig.linux" >> mozconfig
+            echo "Appended Linux-specific mozconfig settings"
+          fi
       
       - name: Bootstrap build environment
         working-directory: firefox-source

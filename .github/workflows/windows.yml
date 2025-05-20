@@ -62,11 +62,69 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/mozilla-firefox/firefox firefox-source
       
+      - name: Inject configuration files
+        shell: pwsh
+        run: |
+          # Create directory for user preferences if it doesn't exist
+          New-Item -Path "firefox-source\browser\app\profile\" -ItemType Directory -Force
+          
+          # Copy common configuration files
+          if (Test-Path -Path ".\config\common") {
+            # Copy user.js if it exists
+            if (Test-Path -Path ".\config\common\user.js") {
+              Copy-Item ".\config\common\user.js" -Destination "firefox-source\browser\app\profile\"
+              Write-Host "Copied common user.js file"
+            }
+            
+            # Apply patches if they exist
+            if (Test-Path -Path ".\config\common\patches") {
+              $patches = Get-ChildItem ".\config\common\patches\*.patch"
+              if ($patches.Count -gt 0) {
+                Write-Host "Applying common patches..."
+                foreach ($patch in $patches) {
+                  Push-Location firefox-source
+                  git apply "..\$patch"
+                  Pop-Location
+                  Write-Host "Applied patch: $patch"
+                }
+              }
+            }
+          }
+          
+          # Copy Windows-specific configuration files
+          if (Test-Path -Path ".\config\windows") {
+            # Apply Windows-specific patches if they exist
+            if (Test-Path -Path ".\config\windows\patches") {
+              $patches = Get-ChildItem ".\config\windows\patches\*.patch"
+              if ($patches.Count -gt 0) {
+                Write-Host "Applying Windows-specific patches..."
+                foreach ($patch in $patches) {
+                  Push-Location firefox-source
+                  git apply "..\$patch"
+                  Pop-Location
+                  Write-Host "Applied patch: $patch"
+                }
+              }
+            }
+          }
+          
+          # Copy any other custom files/directories
+          if (Test-Path -Path ".\config\common\custom") {
+            Copy-Item ".\config\common\custom\*" -Destination "firefox-source\" -Recurse -Force
+            Write-Host "Copied common custom files"
+          }
+          
+          if (Test-Path -Path ".\config\windows\custom") {
+            Copy-Item ".\config\windows\custom\*" -Destination "firefox-source\" -Recurse -Force
+            Write-Host "Copied Windows-specific custom files"
+          }
+      
       - name: Configure build
         shell: pwsh
         working-directory: firefox-source
         run: |
-          @"
+          # Create base mozconfig content
+          $mozconfigContent = @"
           # Build Firefox for Windows
           ac_add_options --enable-application=browser
           ac_add_options --enable-optimize
@@ -76,8 +134,23 @@ jobs:
           ac_add_options --target=x86_64-pc-mingw32
           
           # Fix for SystemFunction036 undefined symbol error
-          export LDFLAGS="-DEFAULTLIB:advapi32.lib $LDFLAGS"
-          "@ | Out-File -FilePath mozconfig -Encoding ASCII
+          export LDFLAGS="-DEFAULTLIB:advapi32.lib `$LDFLAGS"
+          "@
+          
+          # Append common mozconfig if it exists
+          if (Test-Path -Path "..\config\common\mozconfig.common") {
+            $mozconfigContent += "`n" + (Get-Content -Path "..\config\common\mozconfig.common" -Raw)
+            Write-Host "Appended common mozconfig settings"
+          }
+          
+          # Append Windows-specific mozconfig if it exists
+          if (Test-Path -Path "..\config\windows\mozconfig.win") {
+            $mozconfigContent += "`n" + (Get-Content -Path "..\config\windows\mozconfig.win" -Raw)
+            Write-Host "Appended Windows-specific mozconfig settings"
+          }
+          
+          # Write the final mozconfig file
+          $mozconfigContent | Out-File -FilePath mozconfig -Encoding ASCII
       
       - name: Bootstrap build environment
         shell: pwsh
