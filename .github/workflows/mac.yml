@@ -25,6 +25,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+          target: x86_64-apple-darwin
           override: true
       
       - name: Clone Firefox repository
