@@ -61,7 +61,7 @@ jobs:
         shell: pwsh
         working-directory: firefox-source
         run: |
-          python ./mach bootstrap --application-choice=browser --no-interactive
+          python ./mach --no-interactive bootstrap --application-choice=browser
       
       - name: Build Firefox
         shell: cmd
