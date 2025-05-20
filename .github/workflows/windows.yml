@@ -74,6 +74,9 @@ jobs:
           ac_add_options --enable-release
           ac_add_options --disable-tests
           ac_add_options --target=x86_64-pc-mingw32
+          
+          # Fix for SystemFunction036 undefined symbol error
+          export LDFLAGS="-DEFAULTLIB:advapi32.lib $LDFLAGS"
           "@ | Out-File -FilePath mozconfig -Encoding ASCII
       
       - name: Bootstrap build environment
