@@ -34,9 +34,16 @@ jobs:
           components: rustfmt, clippy
           target: x86_64-pc-windows-msvc
 
-      - uses: git-for-windows/setup-git-for-windows-sdk
+      - name: Install Git for Windows SDK
+        uses: git-for-windows/setup-git-for-windows-sdk
         with:
           flavor: full
+    
+      - name: Install Windows SDK
+        uses: ChristopheLav/windows-sdk-install@v1
+        with:
+          #version-sdk: 26100
+          features: 'OptionId.WindowsPerformanceToolkit,OptionId.WindowsDesktopDebuggers,OptionId.AvrfExternal,OptionId.NetFxSoftwareDevelopmentKit,OptionId.WindowsSoftwareLogoToolkit,OptionId.IpOverUsb,OptionId.MSIInstallTools,OptionId.SigningTools,OptionId.UWPManaged,OptionId.UWPCPP,OptionId.UWPLocalized,OptionId.DesktopCPPx86,OptionId.DesktopCPPx64,OptionId.DesktopCPParm64'
 
       - name: Install MozillaBuild
         shell: pwsh
