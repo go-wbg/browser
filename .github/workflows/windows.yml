@@ -1,0 +1,87 @@
+name: Build Firefox for Windows
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 360  # 6 hours
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          choco install -y wget 7zip
+          python -m pip install --upgrade pip
+      
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable-msvc
+          override: true
+      
+      - name: Install Visual Studio Build Tools
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://aka.ms/vs/16/release/vs_buildtools.exe -OutFile vs_buildtools.exe
+          Start-Process -FilePath .\vs_buildtools.exe -ArgumentList '--quiet', '--wait', '--norestart', '--nocache', '--add Microsoft.VisualStudio.Workload.VCTools', '--add Microsoft.VisualStudio.Component.VC.ATL', '--add Microsoft.VisualStudio.Component.VC.ATLMFC' -Wait
+      
+      - name: Clone Firefox repository
+        shell: pwsh
+        run: |
+          git clone --depth 1 https://github.com/mozilla-firefox/firefox firefox-source
+      
+      - name: Configure build
+        shell: pwsh
+        working-directory: firefox-source
+        run: |
+          @"
+          # Build Firefox for Windows
+          ac_add_options --enable-application=browser
+          ac_add_options --enable-optimize
+          ac_add_options --disable-debug
+          ac_add_options --enable-release
+          ac_add_options --disable-tests
+          ac_add_options --target=x86_64-pc-mingw32
+          "@ | Out-File -FilePath mozconfig -Encoding ASCII
+      
+      - name: Bootstrap build environment
+        shell: pwsh
+        working-directory: firefox-source
+        run: |
+          python ./mach bootstrap --application-choice=browser --no-interactive
+      
+      - name: Build Firefox
+        shell: cmd
+        working-directory: firefox-source
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+          python ./mach build
+      
+      - name: Package Firefox
+        shell: cmd
+        working-directory: firefox-source
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+          python ./mach package
+      
+      - name: Upload Windows build
+        uses: actions/upload-artifact@v3
+        with:
+          name: firefox-windows
+          path: |
+            firefox-source/obj-*/dist/firefox-*.zip
+            firefox-source/obj-*/dist/firefox-*.exe
+          if-no-files-found: warn
