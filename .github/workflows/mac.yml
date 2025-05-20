@@ -20,7 +20,6 @@ jobs:
           brew update
           brew install yasm mercurial python3 ccache libidl autoconf@2.13 node
           brew install llvm
-          python3 -m pip install --upgrade pip --break-system-packages
       
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
