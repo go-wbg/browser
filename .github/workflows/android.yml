@@ -34,7 +34,7 @@ jobs:
           libx11-dev libxext-dev libxrender-dev libxt-dev libxft-dev \
           yasm libasound2-dev libcurl4-openssl-dev \
           libnss3-dev libnss3 git curl autoconf2.13 openjdk-17-jdk \
-          nodejs npm zip unzip
+          nodejs npm zip unzip zstd tar
       
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
