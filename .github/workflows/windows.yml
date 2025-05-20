@@ -74,6 +74,7 @@ jobs:
         working-directory: firefox-source
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+          python ./mach clobber
           python ./mach build
       
       - name: Package Firefox
