@@ -36,7 +36,7 @@ jobs:
         shell: pwsh
         run: |
           Invoke-WebRequest -Uri https://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-Latest.exe -OutFile MozillaBuild.exe
-          Start-Process -FilePath .\MozillaBuild.exe -ArgumentList '--quiet'
+          Start-Process -FilePath .\MozillaBuild.exe -ArgumentList '/S'
       
       - name: Install Visual Studio Build Tools
         shell: pwsh
