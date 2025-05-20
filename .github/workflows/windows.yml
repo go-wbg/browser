@@ -35,7 +35,7 @@ jobs:
           target: x86_64-pc-windows-msvc
 
       - name: Install Git for Windows SDK
-        uses: git-for-windows/setup-git-for-windows-sdk
+        uses: git-for-windows/setup-git-for-windows-sdk@v1
         with:
           flavor: full
     
