@@ -63,7 +63,7 @@ jobs:
           ./mach package
       
       - name: Upload Linux build
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: firefox-linux
           path: |
