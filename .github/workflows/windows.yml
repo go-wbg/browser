@@ -158,10 +158,11 @@ jobs:
         run: |
           python ./mach --no-interactive bootstrap --application-choice=browser
 
-      - name: Increase Page File Size
-        run: |
-          wmic computersystem where name="%COMPUTERNAME%" set AutomaticManagedPagefile=false
-          wmic pagefileset where name="C:\\pagefile.sys" set InitialSize=4096,MaximumSize=4096
+      - name: configure Pagefile
+        uses: al-cheb/configure-pagefile-action@v1.2
+        with:
+          minimum-size: 8GB
+          maximum-size: 16GB
 
       - name: Build Firefox
         shell: cmd
