@@ -157,13 +157,18 @@ jobs:
         working-directory: firefox-source
         run: |
           python ./mach --no-interactive bootstrap --application-choice=browser
-      
+
+      - name: Increase Page File Size
+        run: |
+          wmic computersystem where name="%COMPUTERNAME%" set AutomaticManagedPagefile=false
+          wmic pagefileset where name="C:\\pagefile.sys" set InitialSize=4096,MaximumSize=4096
+
       - name: Build Firefox
         shell: cmd
         working-directory: firefox-source
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
-          python ./mach build
+          python ./mach build -j2
       
       - name: Package Firefox
         shell: cmd
