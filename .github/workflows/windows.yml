@@ -169,7 +169,7 @@ jobs:
         working-directory: firefox-source
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
-          python ./mach build -j2
+          python ./mach build -j1
       
       - name: Package Firefox
         shell: cmd
