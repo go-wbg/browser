@@ -9,7 +9,7 @@ on:
 
 jobs:
   build-windows:
-    runs-on: self-hosted
+    runs-on: windows-latest-l
     timeout-minutes: 360  # 6 hours
     steps:
       - name: Checkout repository
