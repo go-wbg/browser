@@ -9,7 +9,7 @@ on:
 
 jobs:
   build-android:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-m
     timeout-minutes: 360  # 6 hours
     steps:
       - name: Checkout repository
