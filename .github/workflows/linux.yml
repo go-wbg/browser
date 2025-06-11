@@ -1,17 +1,13 @@
 name: Build Firefox for Linux
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
   workflow_dispatch:
   workflow_call:
 
 jobs:
   build-linux:
     runs-on: ubuntu-latest
-    timeout-minutes: 300  # 5 hours
+    timeout-minutes: 360  # 6 hours
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
