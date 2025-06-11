@@ -1,0 +1,19 @@
+# Complete mozconfig example for debranded build
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-debranded
+
+# Disable official branding
+ac_add_options --disable-official-branding
+
+# Use unofficial branding assets
+ac_add_options --with-branding=browser/branding/unofficial
+
+# Custom distribution information
+ac_add_options --with-distribution-id=i2p.idk.browser
+ac_add_options --with-app-name=browser
+ac_add_options --with-app-basename=Browser
+
+# Modify update channel (optional)
+#ac_add_options --enable-update-channel=release
+
+# Distribution customizations directory (optional)
+#ac_add_options --with-distribution-directory=/path/to/distribution/customizations
