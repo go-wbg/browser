@@ -79,23 +79,7 @@ jobs:
       
       - name: Configure build
         working-directory: firefox-source
-        run: |
-          # Create base mozconfig file
-          echo "# Build Firefox for macOS" > mozconfig
-          echo "ac_add_options --enable-application=browser" >> mozconfig
-          echo "ac_add_options --enable-optimize" >> mozconfig
-          echo "ac_add_options --disable-debug" >> mozconfig
-          echo "ac_add_options --enable-release" >> mozconfig
-          echo "ac_add_options --disable-tests" >> mozconfig
-          echo "ac_add_options --target=x86_64-apple-darwin" >> mozconfig
-          echo "mk_add_options MOZ_MAKE_FLAGS=\"-j$(sysctl -n hw.ncpu)\"" >> mozconfig
-          
-          # Security hardening options
-          echo "ac_add_options --enable-hardening" >> mozconfig
-          echo "ac_add_options --disable-necko-wifi" >> mozconfig
-          echo "ac_add_options --disable-crashreporter" >> mozconfig
-          echo "ac_add_options --disable-updater" >> mozconfig
-          
+        run: |          
           # Append common mozconfig if it exists
           if [ -f "../config/common/mozconfig.common" ]; then
             cat "../config/common/mozconfig.common" >> mozconfig

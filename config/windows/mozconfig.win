@@ -1,5 +1,4 @@
 # Cross-compile Firefox for Windows from Linux
-ac_add_options --enable-application=browser
 ac_add_options --target=x86_64-w64-mingw32
 
 # Cross-compilation toolchain configuration
@@ -18,18 +17,6 @@ export RUSTFLAGS="-C linker=x86_64-w64-mingw32-gcc"
 export HOST_CC=gcc
 export HOST_CXX=g++
 
-# Basic build options for Windows
-ac_add_options --enable-optimize
-ac_add_options --disable-debug
-ac_add_options --disable-tests
-
-# Additional Windows-specific build options
-# (Base cross-compilation settings are handled in the workflow)
-
 # Windows-specific optimizations
 ac_add_options --enable-strip
 ac_add_options --enable-install-strip
-
-# Disable Windows-specific features that may cause cross-compilation issues
-ac_add_options --disable-maintenance-service
-ac_add_options --disable-updater

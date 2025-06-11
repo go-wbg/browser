@@ -83,15 +83,6 @@ jobs:
       - name: Configure build
         working-directory: firefox-source
         run: |
-          # Create base mozconfig
-          echo "# Build Firefox for Linux" > mozconfig
-          echo "ac_add_options --enable-application=browser" >> mozconfig
-          echo "ac_add_options --enable-optimize" >> mozconfig
-          echo "ac_add_options --disable-debug" >> mozconfig
-          echo "ac_add_options --enable-release" >> mozconfig
-          echo "ac_add_options --disable-tests" >> mozconfig
-          echo "mk_add_options MOZ_MAKE_FLAGS=\"-j$(nproc)\"" >> mozconfig
-          
           # Append common mozconfig if it exists
           if [ -f "../config/common/mozconfig.common" ]; then
             cat "../config/common/mozconfig.common" >> mozconfig
