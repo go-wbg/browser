@@ -23,7 +23,7 @@ jobs:
             python3-pip \
             curl \
             git \
-            msiextract
+            msitools
           python3 -m pip install --upgrade pip
       
       - name: Set up Rust with Windows target
