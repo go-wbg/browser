@@ -38,7 +38,9 @@ jobs:
             clang \
             llvm \
             libclang-dev \
-            cbindgen
+            cbindgen \
+            mingw-w64-x86-64-dev \
+            mingw-w64-common
           python3 -m pip install --upgrade pip
       
       - name: Set up Node.js
@@ -127,6 +129,10 @@ jobs:
           
           # Install cbindgen if not already available
           cargo install cbindgen || true
+          
+          # Set up MinGW alternatives
+          sudo update-alternatives --install /usr/bin/x86_64-w64-mingw32-gcc x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix 100
+          sudo update-alternatives --install /usr/bin/x86_64-w64-mingw32-g++ x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix 100
           
           # Verify cross-compilation toolchain
           x86_64-w64-mingw32-gcc --version
