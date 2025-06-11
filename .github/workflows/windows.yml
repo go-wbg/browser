@@ -6,167 +6,127 @@ on:
 
 jobs:
   build-windows:
-    runs-on: windows-latest-l
+    runs-on: ubuntu-latest
     timeout-minutes: 360  # 6 hours
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
       
-      - name: Install dependencies
+      - name: Install cross-compilation dependencies
         run: |
-          choco install -y wget 7zip
-          python -m pip install --upgrade pip
+          sudo apt-get update
+          sudo apt-get install -y \
+            gcc-mingw-w64-x86-64 \
+            g++-mingw-w64-x86-64 \
+            mingw-w64-tools \
+            wine64 \
+            python3-pip \
+            curl \
+            git
+          python3 -m pip install --upgrade pip
       
-      - name: Set up Rust
+      - name: Set up Rust with Windows target
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable-msvc
+          toolchain: stable
           override: true
           components: rustfmt, clippy
-          target: x86_64-pc-windows-msvc
-
-      - name: Install Git for Windows SDK
-        uses: git-for-windows/setup-git-for-windows-sdk@v1
-        with:
-          flavor: full
-    
-      - name: Install Windows SDK
-        uses: ChristopheLav/windows-sdk-install@v1
-        with:
-          version-sdk: 26100
-          features: 'OptionId.UWPCPP,OptionId.DesktopCPParm64'    
+          target: x86_64-pc-windows-gnu
       
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-
-      - name: Install MozillaBuild
-        run: |
-          Invoke-WebRequest -Uri https://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-Latest.exe -OutFile MozillaBuild.exe
-          Start-Process -FilePath .\MozillaBuild.exe -ArgumentList '/S' -Wait
-
-      - name: Install Visual Studio Build Tools
-        run: |
-          Invoke-WebRequest -Uri https://aka.ms/vs/17/release/vs_buildtools.exe -OutFile vs_buildtools.exe
-          Start-Process -FilePath .\vs_buildtools.exe -ArgumentList '--quiet', '--wait', '--norestart', '--nocache', '--add Microsoft.VisualStudio.Workload.VCTools', '--add Microsoft.VisualStudio.Component.VC.ATL', '--add Microsoft.VisualStudio.Component.VC.ATLMFC' -Wait
   
       - name: Clone Firefox repository
         run: |
-          git clone --depth 1 https://github.com/mozilla-firefox/firefox firefox-source
+          git clone --depth 1 https://github.com/mozilla/gecko-dev firefox-source
       
       - name: Inject configuration files
         run: |
           # Create directory for user preferences if it doesn't exist
-          New-Item -Path "firefox-source\browser\app\profile\" -ItemType Directory -Force
+          mkdir -p firefox-source/browser/app/profile/
           
           # Copy common configuration files
-          if (Test-Path -Path ".\config\common") {
+          if [ -d "./config/common" ]; then
             # Copy user.js if it exists
-            if (Test-Path -Path ".\config\common\user.js") {
-              Copy-Item ".\config\common\user.js" -Destination "firefox-source\browser\app\profile\"
-              Write-Host "Copied common user.js file"
-            }
+            if [ -f "./config/common/user.js" ]; then
+              cp "./config/common/user.js" "firefox-source/browser/app/profile/"
+              echo "Copied common user.js file"
+            fi
             
             # Apply patches if they exist
-            if (Test-Path -Path ".\config\common\patches") {
-              $patches = Get-ChildItem ".\config\common\patches\*.patch"
-              if ($patches.Count -gt 0) {
-                Write-Host "Applying common patches..."
-                foreach ($patch in $patches) {
-                  Push-Location firefox-source
-                  git apply "..\$patch"
-                  Pop-Location
-                  Write-Host "Applied patch: $patch"
-                }
-              }
-            }
-          }
+            if [ -d "./config/common/patches" ]; then
+              for patch in ./config/common/patches/*.patch; do
+                if [ -f "$patch" ]; then
+                  echo "Applying common patch: $patch"
+                  cd firefox-source
+                  git apply "../$patch"
+                  cd ..
+                fi
+              done
+            fi
+          fi
           
           # Copy Windows-specific configuration files
-          if (Test-Path -Path ".\config\windows") {
+          if [ -d "./config/windows" ]; then
             # Apply Windows-specific patches if they exist
-            if (Test-Path -Path ".\config\windows\patches") {
-              $patches = Get-ChildItem ".\config\windows\patches\*.patch"
-              if ($patches.Count -gt 0) {
-                Write-Host "Applying Windows-specific patches..."
-                foreach ($patch in $patches) {
-                  Push-Location firefox-source
-                  git apply "..\$patch"
-                  Pop-Location
-                  Write-Host "Applied patch: $patch"
-                }
-              }
-            }
-          }
+            if [ -d "./config/windows/patches" ]; then
+              for patch in ./config/windows/patches/*.patch; do
+                if [ -f "$patch" ]; then
+                  echo "Applying Windows-specific patch: $patch"
+                  cd firefox-source
+                  git apply "../$patch"
+                  cd ..
+                fi
+              done
+            fi
+          fi
           
           # Copy any other custom files/directories
-          if (Test-Path -Path ".\config\common\custom") {
-            Copy-Item ".\config\common\custom\*" -Destination "firefox-source\" -Recurse -Force
-            Write-Host "Copied common custom files"
-          }
+          if [ -d "./config/common/custom" ]; then
+            cp -r ./config/common/custom/* firefox-source/
+            echo "Copied common custom files"
+          fi
           
-          if (Test-Path -Path ".\config\windows\custom") {
-            Copy-Item ".\config\windows\custom\*" -Destination "firefox-source\" -Recurse -Force
-            Write-Host "Copied Windows-specific custom files"
-          }
+          if [ -d "./config/windows/custom" ]; then
+            cp -r ./config/windows/custom/* firefox-source/
+            echo "Copied Windows-specific custom files"
+          fi
       
       - name: Configure build
         working-directory: firefox-source
         run: |
-          # Create base mozconfig content
-          $mozconfigContent = @"
-          # Build Firefox for Windows
-          ac_add_options --enable-application=browser
-          ac_add_options --enable-optimize
-          ac_add_options --disable-debug
-          ac_add_options --enable-release
-          ac_add_options --disable-tests
-          ac_add_options --target=x86_64-pc-mingw32
-          
-          # Fix for SystemFunction036 undefined symbol error
-          export LDFLAGS="-DEFAULTLIB:advapi32.lib `$LDFLAGS"
-          "@
+          # Start with empty mozconfig
+          touch mozconfig
           
           # Append common mozconfig if it exists
-          if (Test-Path -Path "..\config\common\mozconfig.common") {
-            $mozconfigContent += "`n" + (Get-Content -Path "..\config\common\mozconfig.common" -Raw)
-            Write-Host "Appended common mozconfig settings"
-          }
+          if [ -f "../config/common/mozconfig.common" ]; then
+            cat "../config/common/mozconfig.common" >> mozconfig
+            echo "Appended common mozconfig settings"
+          fi
           
-          # Append Windows-specific mozconfig if it exists
-          if (Test-Path -Path "..\config\windows\mozconfig.win") {
-            $mozconfigContent += "`n" + (Get-Content -Path "..\config\windows\mozconfig.win" -Raw)
-            Write-Host "Appended Windows-specific mozconfig settings"
-          }
-          
-          # Write the final mozconfig file
-          $mozconfigContent | Out-File -FilePath mozconfig -Encoding ASCII
+          # Append Windows-specific mozconfig if it exists  
+          if [ -f "../config/windows/mozconfig.win" ]; then
+            echo "" >> mozconfig
+            cat "../config/windows/mozconfig.win" >> mozconfig
+            echo "Appended Windows-specific mozconfig settings"
+          fi
       
       - name: Bootstrap build environment
         working-directory: firefox-source
         run: |
-          python ./mach --no-interactive bootstrap --application-choice=browser
-
-      - name: configure Pagefile
-        uses: al-cheb/configure-pagefile-action@v1.2
-        with:
-          minimum-size: 12GB
-          maximum-size: 16GB
+          python3 ./mach --no-interactive bootstrap --application-choice=browser
 
       - name: Build Firefox
-        shell: cmd
         working-directory: firefox-source
         run: |
-          call "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
-          python ./mach build -j1
+          python3 ./mach build -j$(nproc)
       
       - name: Package Firefox
-        shell: cmd
         working-directory: firefox-source
         run: |
-          call "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
-          python ./mach package
+          python3 ./mach package
       
       - name: Upload Windows build
         uses: actions/upload-artifact@v4
