@@ -20,3 +20,6 @@ export HOST_CXX=g++
 # Windows-specific optimizations
 ac_add_options --enable-strip
 ac_add_options --enable-install-strip
+
+# Disable maintenance service
+ac_add_options --disable-maintenance-service
