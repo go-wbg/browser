@@ -1,6 +1,9 @@
 # Cross-compile Firefox for Windows from Linux
 ac_add_options --target=x86_64-pc-windows-gnu
 ac_add_options --host=x86_64-pc-linux-gnu
+ac_add_options --with-toolchain-prefix=x86_64-w64-mingw32-
+ac_add_options --with-l10n-base=./l10n
+
 
 # Cross-compilation toolchain configuration
 export CC="x86_64-w64-mingw32-gcc"
