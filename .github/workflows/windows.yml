@@ -23,8 +23,28 @@ jobs:
             python3-pip \
             curl \
             git \
-            msitools
+            msitools \
+            build-essential \
+            autoconf \
+            automake \
+            libtool \
+            pkg-config \
+            yasm \
+            nasm \
+            cmake \
+            zip \
+            unzip \
+            wget \
+            clang \
+            llvm \
+            libclang-dev \
+            cbindgen
           python3 -m pip install --upgrade pip
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
       
       - name: Set up Rust with Windows target
         uses: actions-rs/toolchain@v1
@@ -94,6 +114,23 @@ jobs:
             cp -r ./config/windows/custom/* firefox-source/
             echo "Copied Windows-specific custom files"
           fi
+      
+      - name: Install additional Firefox dependencies
+        run: |
+          # Install Python dependencies for Firefox build system
+          python3 -m pip install \
+            setuptools \
+            zstandard \
+            psutil \
+            six \
+            toml
+          
+          # Install cbindgen if not already available
+          cargo install cbindgen || true
+          
+          # Verify cross-compilation toolchain
+          x86_64-w64-mingw32-gcc --version
+          x86_64-w64-mingw32-g++ --version
       
       - name: Configure build
         working-directory: firefox-source
