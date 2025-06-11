@@ -1,0 +1,83 @@
+name: Nightly Build Release
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 2 1 * *'  # Run at 2 AM UTC daily
+  workflow_dispatch:
+
+jobs:
+  # Trigger all platform builds
+  build-linux:
+    uses: ./.github/workflows/linux.yml
+    
+  build-mac:
+    uses: ./.github/workflows/mac.yml
+    
+  build-windows:
+    uses: ./.github/workflows/windows.yml
+    
+  build-android:
+    uses: ./.github/workflows/android.yml
+
+  # Create release with all artifacts
+  create-release:
+    needs: [build-linux, build-mac, build-windows, build-android]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: firefox-linux.tar.xz
+          path: ./artifacts/linux/
+      
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: firefox-macos
+          path: ./artifacts/mac/
+      
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: firefox-windows
+          path: ./artifacts/windows/
+      
+      - name: Download Android artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: firefox-android
+          path: ./artifacts/android/
+      
+      - name: Create nightly release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: latest
+          name: "Nightly Build"
+          body: |
+            ## Firefox Custom Build - Nightly Release
+            
+            Automated nightly build created on ${{ github.event.head_commit.timestamp }}
+            
+            **Platforms included:**
+            - 🐧 Linux (tar.xz)
+            - 🍎 macOS (dmg)  
+            - 🪟 Windows (zip/exe)
+            - 🤖 Android (apk)
+            
+            **Build Information:**
+            - Commit: ${{ github.sha }}
+            - Branch: ${{ github.ref_name }}
+          artifacts: |
+            ./artifacts/linux/*
+            ./artifacts/mac/*
+            ./artifacts/windows/*
+            ./artifacts/android/*
+          allowUpdates: true
+          removeArtifacts: true
+          replacesArtifacts: true
+          token: ${{ secrets.GITHUB_TOKEN }}
