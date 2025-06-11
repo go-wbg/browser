@@ -77,7 +77,6 @@ jobs:
             ./artifacts/linux/*
             ./artifacts/mac/*
             ./artifacts/windows/*
-            ./artifacts/android/*
           allowUpdates: true
           removeArtifacts: true
           replacesArtifacts: true
