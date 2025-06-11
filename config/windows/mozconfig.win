@@ -2,9 +2,6 @@
 ac_add_options --target=x86_64-pc-windows-gnu
 ac_add_options --host=x86_64-pc-linux-gnu
 
-# Enable cross-compilation
-ac_add_options --enable-cross-compile
-
 # Cross-compilation toolchain configuration
 export CC="x86_64-w64-mingw32-gcc"
 export CXX="x86_64-w64-mingw32-g++"
