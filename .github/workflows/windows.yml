@@ -22,7 +22,8 @@ jobs:
             wine64 \
             python3-pip \
             curl \
-            git
+            git \
+            msiextract
           python3 -m pip install --upgrade pip
       
       - name: Set up Rust with Windows target
