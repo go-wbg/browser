@@ -23,20 +23,14 @@ export CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER="x86_64-w64-mingw32-gcc"
 export RUSTFLAGS="-C linker=x86_64-w64-mingw32-gcc"
 
 # Additional cross-compilation flags
-export CFLAGS="-D_FORTIFY_SOURCE=2"
-export CXXFLAGS="-D_FORTIFY_SOURCE=2"
+#export CFLAGS="-D_FORTIFY_SOURCE=2"
+#export CXXFLAGS="-D_FORTIFY_SOURCE=2"
 export LDFLAGS="-Wl,--no-insert-timestamp"
 
 # Windows-specific optimizations
-ac_add_options --enable-strip
-ac_add_options --enable-install-strip
+#ac_add_options --enable-strip
+#ac_add_options --enable-install-strip
 
 # Disable features that may cause cross-compilation issues
 ac_add_options --disable-maintenance-service
-ac_add_options --disable-updater
 ac_add_options --disable-crashreporter
-ac_add_options --disable-debug
-ac_add_options --disable-tests
-
-# Enable optimization
-ac_add_options --enable-release
