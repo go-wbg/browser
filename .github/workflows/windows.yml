@@ -43,6 +43,9 @@ jobs:
             mingw-w64-x86-64-dev \
             mingw-w64-common
           python3 -m pip install --upgrade pip
+          sudo apt-get autoremove -y
+          sudo apt-get clean -y
+          sudo apt-get autoclean -y
       
       - name: Set up Node.js
         uses: actions/setup-node@v3

@@ -21,6 +21,9 @@ jobs:
           libgtk-3-dev libglib2.0-dev libpango1.0-dev libfontconfig1-dev \
           yasm libasound2-dev libcurl4-openssl-dev \
           libnss3-dev libnss3 git curl autoconf2.13
+          sudo apt-get autoremove -y
+          sudo apt-get clean -y
+          sudo apt-get autoclean -y
 
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
