@@ -1,1 +1,1 @@
-Put config files here.
+# mozconfig and patch files here
