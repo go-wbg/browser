@@ -23,6 +23,10 @@ ac_add_options --disable-updater
 # Distribution customizations directory (optional)
 #ac_add_options --with-distribution-directory=/path/to/distribution/customizations
 
+# Force constrained WebRTC
+ac_add_options MOZ_WEBRTC=1
+ac_add_options MOZ_WEBRTC_LEAK_PROTECTION=1
+
 # General release options
 ac_add_options --enable-optimize
 ac_add_options --disable-debug
