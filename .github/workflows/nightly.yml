@@ -48,11 +48,11 @@ jobs:
           name: firefox-windows
           path: ./artifacts/windows/
       
-      - name: Download Android artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: firefox-android
-          path: ./artifacts/android/
+      #- name: Download Android artifacts
+        #uses: actions/download-artifact@v4
+        #with:
+          #name: firefox-android
+          #path: ./artifacts/android/
       
       - name: Create nightly release
         uses: ncipollo/release-action@v1
