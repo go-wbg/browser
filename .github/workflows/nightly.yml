@@ -7,6 +7,11 @@ on:
     - cron: '0 1/6 * * *'  # Every 6 hours
   workflow_dispatch:
 
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
 jobs:
   # Trigger all platform builds
   build-linux:
