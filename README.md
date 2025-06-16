@@ -18,7 +18,7 @@ This project's primary goal is to leverage CI/CD pipelines to automatically buil
 Automated builds will produce ready-to-use binaries for multiple platforms:
 
 - **Linux**: Firefox binaries packaged as `.tar.xz` archives
-- **Windows**: Installer packages (`.exe`) and portable `.zip` archives
+- **Windows**: Binraries packaged as portable `.zip` archives
 
 All builds will be available as GitHub Actions artifacts and can be downloaded from the Actions tab of this repository.
 
