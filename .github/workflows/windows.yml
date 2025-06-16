@@ -20,7 +20,7 @@ jobs:
             g++-mingw-w64-x86-64 \
             mingw-w64-tools \
             wine64 \
-            wine64-development \
+            wine*dev* \
             python3-pip \
             curl \
             git \

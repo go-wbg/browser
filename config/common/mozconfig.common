@@ -9,10 +9,23 @@ ac_add_options --disable-official-branding
 ac_add_options --with-branding=browser/branding/unofficial
 
 # Custom distribution information
+<<<<<<< HEAD
 ac_add_options --enable-application=gobrowser
 ac_add_options --with-distribution-id=i2p.idk.gobrowser
 ac_add_options --with-app-name=gobrowser
 ac_add_options --with-app-basename=gobrowser
+||||||| c5d185b
+ac_add_options --enable-application=browser
+ac_add_options --with-distribution-id=i2p.idk.browser
+ac_add_options --with-app-name=browser
+ac_add_options --with-app-basename=Browser
+=======
+ac_add_options --enable-application=browser
+ac_add_options --with-distribution-id=i2p.idk.browser
+ac_add_options --with-app-name=browser
+ac_add_options --with-app-basename=Browser
+ac_add_options --enable-release
+>>>>>>> 81f1ebdfc3d64fe0ba4d376e3a4a008d435e3c25
 
 # Modify update channel (optional)
 #ac_add_options --enable-update-channel=release
@@ -26,7 +39,5 @@ ac_add_options --disable-updater
 # General release options
 ac_add_options --enable-optimize
 ac_add_options --disable-debug
-ac_add_options --enable-release
 ac_add_options --disable-tests
-ac_add_options --disable-crashreporter
-ac_add_options --enable-optimize
+#ac_add_options --disable-crashreporter
