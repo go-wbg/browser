@@ -192,6 +192,6 @@ jobs:
       - name: Upload Windows build
         uses: actions/upload-artifact@v4
         with:
-          name: artifacts/windows/firefox-windows.zip
+          name: firefox-windows.zip
           path: firefox-source/obj-*/dist/firefox-*.zip
           if-no-files-found: warn
