@@ -79,9 +79,9 @@ jobs:
             - Commit: ${{ github.sha }}
             - Branch: ${{ github.ref_name }}
           artifacts: |
-            ./*.tar.xz
-            ./*.dmg
-            ./*.zip
+            ./artifacts/linux/*.tar.xz
+            ./artifacts/mac/*.dmg
+            ./artifacts/windows/*.zip
           allowUpdates: true
           removeArtifacts: true
           replacesArtifacts: true
