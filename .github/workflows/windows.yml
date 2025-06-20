@@ -189,6 +189,14 @@ jobs:
         run: |
           python3 ./mach package
       
+      - name: List everything in the repository
+        run: |
+          echo "Repository contents:"
+          ls -R
+          find . -name '*.zip'
+          find . -name '*.tar.xz'
+          find . -name '*.dmg'
+
       - name: Upload Windows build
         uses: actions/upload-artifact@v4
         with:
