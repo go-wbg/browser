@@ -107,10 +107,9 @@ jobs:
         run: |
           ./mach package
       
-      - name: List everything in the repository
+      - name: List packages in the repository
         run: |
           echo "Repository contents:"
-          ls -R
           find . -name '*.zip'
           find . -name '*.tar.xz'
           find . -name '*.dmg'
