@@ -125,8 +125,6 @@ jobs:
       - name: List packages in the repository
         run: |
           echo "Repository contents:"
-          find . -name '*.zip'
-          find . -name '*.tar.xz'
           find . -name '*.dmg'
 
       - name: Upload macOS build
