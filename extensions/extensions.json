@@ -39,6 +39,14 @@
       "source": "https://addons.mozilla.org/firefox/downloads/latest/i2p-in-private-browsing/addon-i2p-in-private-browsing-latest.xpi",
       "enabled": true,
       "description": "Automatically configure Firefox to use I2P proxy in private browsing mode"
+    },
+    {
+      "id": "onioncbt@eyedeekay.github.io",
+      "name": "Onion in Container Browsing",
+      "version": "latest",
+      "source": "https://addons.mozilla.org/firefox/downloads/latest/onion-in-container-browsing/addon-onion-in-container-browsing-latest.xpi",
+      "enabled": true,
+      "description": "Automatically open .onion sites in container tabs configured to use Tor proxy"
     }
   ],
   "settings": {
