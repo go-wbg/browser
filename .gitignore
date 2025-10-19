@@ -27,3 +27,4 @@ go.work.sum
 # Extension downloads
 extensions/cache/*.xpi
 extensions/cache/*.json
+*.xpi
