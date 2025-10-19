@@ -1,0 +1,17 @@
+{
+  "extensions": [
+    {
+      "id": "uBlock0@raymondhill.net",
+      "name": "uBlock Origin",
+      "version": "latest",
+      "source": "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/addon-ublock-origin-latest.xpi",
+      "enabled": true,
+      "description": "Efficient wide-spectrum content blocker with privacy protections"
+    }
+  ],
+  "settings": {
+    "verify_signatures": true,
+    "cache_directory": "extensions/cache",
+    "distribution_directory": "config/common/distribution/extensions"
+  }
+}

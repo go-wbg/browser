@@ -78,6 +78,14 @@ jobs:
         with:
           python-version: '3.11'
   
+      - name: Download and prepare extensions
+        run: |
+          # Install jq for JSON parsing
+          sudo apt-get install -y jq
+          
+          # Download extensions
+          bash extensions/download.sh
+  
       - name: Clone Firefox repository
         run: |
           git clone --depth 1 https://github.com/mozilla/gecko-dev firefox-source
@@ -132,6 +140,13 @@ jobs:
           if [ -d "./config/windows/custom" ]; then
             cp -r ./config/windows/custom/* firefox-source/
             echo "Copied Windows-specific custom files"
+          fi
+          
+          # Copy distribution directory if it exists
+          if [ -d "./config/common/distribution" ]; then
+            mkdir -p firefox-source/browser/app/distribution
+            cp -r ./config/common/distribution/* firefox-source/browser/app/distribution/
+            echo "Copied distribution directory with extensions"
           fi
       
       - name: Install additional Firefox dependencies

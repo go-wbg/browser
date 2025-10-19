@@ -31,6 +31,17 @@ The browser will implement multiple layers of protection focused on:
 - **Anti-Exploitation Hardening**: Maximizing built-in exploit mitigations and reducing attack surface
 - **Fingerprinting Resistance**: Reducing identifiable browser characteristics
 
+## Included Extensions
+
+This build includes privacy-enhancing WebExtensions by default:
+
+- **uBlock Origin**: Efficient wide-spectrum content blocker
+  - Blocks ads, trackers, and malware domains
+  - Reduces fingerprinting surface
+  - Configurable privacy filters
+
+Extensions can be managed by editing `extensions/extensions.json`. See `extensions/README.md` for details.
+
 ## Using CI-Built Releases
 
 ### Download Latest Build
