@@ -207,7 +207,7 @@ jobs:
       - name: List packages in the repository
         run: |
           echo "Repository contents:"
-          find . -iname '*firefox*.zip'
+          find . -iname '*firefox*.exe'
 
       - name: Upload Windows build
         uses: actions/upload-artifact@v4
