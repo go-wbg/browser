@@ -208,7 +208,7 @@ jobs:
       - name: List packages in the repository
         run: |
           echo "Repository contents:"
-          find . -iname '*firefox*.exe'
+          find . -iname '*.exe' -iname '*.msi'
           #NAME=$(find . -iname '*firefox*.exe')
           #find . -iname '*firefox*.exe' -exec 7z x {} -o./firefox_extracted \;
           #cd firefox_extracted && zip -r ../$NAME.zip ./*
